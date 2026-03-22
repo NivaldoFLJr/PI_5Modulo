@@ -6,4 +6,4 @@ Repositorio feito com o proposito de auxiliar no desenvolvimento do Projeto Inte
 Evelyn:
 João:
 Leticia:
-Nivaldo:
+Nivaldo: Ok
