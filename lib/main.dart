@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../screens/pedidos/pedidos_page.dart';
+import '../screens/relatorios/relatorios_page.dart';
 
 void main() {
   runApp(const BeteSalgadosApp());
@@ -266,13 +267,19 @@ class AppDrawer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 children: [
                   DrawerMenuTile(
-                    icon: Icons.insert_chart_outlined,
-                    title: 'Relatórios',
+                    icon: Icons.chat_bubble_outline,
+                    title: 'Relátorios',
                     onTap: () {
-                      Navigator.pop(context);
-                      // TODO: Navegar para Relatórios
-                    },
-                  ),
+                    Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RelatoriosPage(),
+                                        ),
+                                    );
+                                  },
+                                ),
                   DrawerMenuTile(
                     icon: Icons.chat_bubble_outline,
                     title: 'Pedidos',
