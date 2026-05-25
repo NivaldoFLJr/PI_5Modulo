@@ -5,8 +5,6 @@ import '../../components/app_scaffold.dart';
 import '../../services/api_service.dart';
 import 'menu_estoque.dart';
 
-// ← Sem import de main.dart ou AppBottomNav — o AdminShell cuida da nav
-
 class EstoquePage extends StatefulWidget {
   final Usuario usuario;
   const EstoquePage({super.key, required this.usuario});
@@ -134,8 +132,6 @@ class _EstoquePageState extends State<EstoquePage> {
   }
 }
 
-// ── Tab ───────────────────────────────────────────────────────
-
 class _Tab extends StatelessWidget {
   final String label;
   final bool ativo;
@@ -160,8 +156,6 @@ class _Tab extends StatelessWidget {
     );
   }
 }
-
-// ── Card de produto no estoque ────────────────────────────────
 
 class ProdutoEstoqueCard extends StatelessWidget {
   final EstoqueItem item;
@@ -221,8 +215,6 @@ class ProdutoEstoqueCard extends StatelessWidget {
     );
   }
 }
-
-// ── Widgets auxiliares ────────────────────────────────────────
 
 class _ErroWidget extends StatelessWidget {
   final String mensagem;

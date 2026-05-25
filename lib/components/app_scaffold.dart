@@ -17,19 +17,17 @@ class AppScaffold extends StatelessWidget {
     required this.currentIndex,
     this.bottomNavigationBar,
     this.floatingActionButton,
-    this.showMenu = true, // ← false nas telas de cliente se quiser
+    this.showMenu = true,
   });
 
   void _onMenuSelected(BuildContext context, String value) {
     switch (value) {
       case 'perfil':
-        // TODO: navegar para página de perfil
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Perfil em breve')),
         );
         break;
       case 'configuracoes':
-        // TODO: navegar para configurações
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Configurações em breve')),
         );
@@ -37,7 +35,7 @@ class AppScaffold extends StatelessWidget {
       case 'sair':
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false, // remove todas as rotas anteriores
+          (route) => false,
         );
         break;
     }

@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS pedido_itens (
   FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
 
--- 3. Dados iniciais
 INSERT INTO clientes (nome) VALUES ('Maria Clara'), ('João Pedro'), ('Fernanda');
 
 INSERT INTO produtos (nome, unidade, preco_venda, preco_custo, quantidade, icone, categoria) VALUES
@@ -79,6 +78,5 @@ INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unitario) VAL
   (2, 1, 100, 1.00), (2, 4, 100, 1.50),
   (3, 4, 30, 1.00);
 
--- 4. Admin (inserido depois que a tabela usuarios existe)
 INSERT INTO usuarios (nome, email, senha, role, cliente_id)
 VALUES ('Administrador', 'admin@admin.com', 'admin123', 'admin', NULL);

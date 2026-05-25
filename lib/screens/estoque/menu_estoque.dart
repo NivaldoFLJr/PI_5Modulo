@@ -5,8 +5,6 @@ import '../../components/app_scaffold.dart';
 import '../../services/api_service.dart';
 import '../../services/api_client.dart';
 
-// ── Matéria Prima Page ────────────────────────────────────────────────────────
-
 class MateriaPrimaPage extends StatefulWidget {
   final VoidCallback? onSalvo;
   const MateriaPrimaPage({super.key, this.onSalvo});
@@ -74,7 +72,6 @@ class _MateriaPrimaPageState extends State<MateriaPrimaPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Tabs ──────────────────────────────────────────────
           Container(
             color: AppTheme.primary,
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -102,7 +99,6 @@ class _MateriaPrimaPageState extends State<MateriaPrimaPage> {
             ),
           ),
 
-          // ── Grid ──────────────────────────────────────────────
           Expanded(
             child: Stack(
               children: [
@@ -149,8 +145,6 @@ class _MateriaPrimaPageState extends State<MateriaPrimaPage> {
   }
 }
 
-// ── Card matéria prima ────────────────────────────────────────────────────────
-
 class _MateriaPrimaCard extends StatelessWidget {
   final EstoqueItem item;
 
@@ -188,8 +182,6 @@ class _MateriaPrimaCard extends StatelessWidget {
     );
   }
 }
-
-// ── Bottom Sheet: opções ──────────────────────────────────────────────────────
 
 class OpcoesAdicionarSheet extends StatelessWidget {
   final VoidCallback onNovoProduto;
@@ -267,8 +259,6 @@ class OpcoesAdicionarSheet extends StatelessWidget {
   }
 }
 
-// ── Bottom Sheet: adicionar novo produto ──────────────────────────────────────
-
 class AdicionarProdutoSheet extends StatefulWidget {
   final VoidCallback onSalvo;
 
@@ -314,7 +304,6 @@ class _AdicionarProdutoSheetState extends State<AdicionarProdutoSheet> {
     setState(() => _salvando = true);
 
     try {
-      // Cria o produto
       final result = await ApiClient.post('/produtos', {
         'nome':        nome,
         'unidade':     unidade,
@@ -325,7 +314,6 @@ class _AdicionarProdutoSheetState extends State<AdicionarProdutoSheet> {
         'categoria':   'salgado',
       });
 
-      // Cria o estoque inicial
       await ApiClient.post('/estoque', {
         'produto_id':       result['id'],
         'quantidade_atual': quantidade,
@@ -424,8 +412,6 @@ class _AdicionarProdutoSheetState extends State<AdicionarProdutoSheet> {
     );
   }
 }
-
-// ── Campo de texto estilizado ─────────────────────────────────────────────────
 
 class _StyledTextField extends StatelessWidget {
   final TextEditingController controller;

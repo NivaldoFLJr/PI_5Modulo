@@ -6,7 +6,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ── Helpers ───────────────────────────────────────────────────
 function filtroData(periodo) {
   switch (periodo) {
     case 'hoje':   return 'DATE(criado_em) = CURDATE()';
@@ -16,10 +15,8 @@ function filtroData(periodo) {
   }
 }
 
-// ── Health check ──────────────────────────────────────────────
 app.get('/health', (_, res) => res.json({ ok: true }));
 
-// ── Métricas com filtro de período ────────────────────────────
 app.get('/metricas', async (req, res) => {
   try {
     const periodo = req.query.periodo || 'todos';
@@ -46,7 +43,6 @@ app.get('/metricas', async (req, res) => {
   }
 });
 
-// ── Dados do gráfico de barras (últimos 7 dias) ───────────────
 app.get('/relatorios/grafico', async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -62,7 +58,6 @@ app.get('/relatorios/grafico', async (req, res) => {
       ORDER BY dia ASC
     `);
 
-    // Preenche os 7 dias mesmo se não houver pedidos
     const resultado = [];
     for (let i = 6; i >= 0; i--) {
       const data = new Date();
@@ -86,7 +81,6 @@ app.get('/relatorios/grafico', async (req, res) => {
   }
 });
 
-// ── Pedidos ───────────────────────────────────────────────────
 app.get('/pedidos', async (_, res) => {
   try {
     const [rows] = await db.query(`
@@ -145,7 +139,6 @@ app.patch('/pedidos/:id/status', async (req, res) => {
   }
 });
 
-// ── Produtos ──────────────────────────────────────────────────
 app.get('/produtos', async (_, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM produtos ORDER BY criado_em DESC');
@@ -168,7 +161,6 @@ app.post('/produtos', async (req, res) => {
   }
 });
 
-// ── Estoque ───────────────────────────────────────────────────
 app.get('/estoque', async (_, res) => {
   try {
     const [rows] = await db.query(`
@@ -209,7 +201,6 @@ app.post('/estoque', async (req, res) => {
   }
 });
 
-// ── Clientes ──────────────────────────────────────────────────
 app.get('/clientes', async (_, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM clientes ORDER BY nome');
@@ -230,7 +221,6 @@ app.post('/clientes', async (req, res) => {
   }
 });
 
-// ── Auth ──────────────────────────────────────────────────────
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   try {
@@ -253,7 +243,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ── Pedidos por cliente ───────────────────────────────────────
 app.get('/pedidos/cliente/:clienteId', async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -274,7 +263,6 @@ app.get('/pedidos/cliente/:clienteId', async (req, res) => {
   }
 });
 
-// ── Cadastro ──────────────────────────────────────────────────
 app.post('/cadastro', async (req, res) => {
   const { nome, email, senha } = req.body;
   const conn = await db.getConnection();

@@ -33,7 +33,6 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (usuario.isAdmin) {
-        // ← Vai para o AdminShell passando o usuario — sem reconstruir MyApp
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => AdminShell(usuario: usuario)),
@@ -158,8 +157,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-// ── Shell do cliente ──────────────────────────────────────────
 
 class ClienteHome extends StatefulWidget {
   final Usuario usuario;

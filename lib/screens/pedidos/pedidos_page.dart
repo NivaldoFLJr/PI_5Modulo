@@ -5,8 +5,6 @@ import '../../components/app_scaffold.dart';
 import '../../services/api_service.dart';
 import '../../services/api_client.dart';
 
-// ← Sem import de main.dart ou AppBottomNav — o AdminShell cuida da nav
-
 class PedidosPage extends StatelessWidget {
   final Usuario usuario;
   const PedidosPage({super.key, required this.usuario});
@@ -124,8 +122,6 @@ class _PedidosHomeState extends State<_PedidosHome> {
   }
 }
 
-// ── Hero Banner ───────────────────────────────────────────────
-
 class _HeroBanner extends StatelessWidget {
   final Metricas? metricas;
   final bool loading;
@@ -173,7 +169,6 @@ class _HeroBanner extends StatelessWidget {
   }
 }
 
-// ── Card de pedido ────────────────────────────────────────────
 
 class PedidoCard extends StatelessWidget {
   final PedidoApi pedido;
@@ -291,8 +286,6 @@ class PedidoCard extends StatelessWidget {
     );
   }
 }
-
-// ── Adicionar pedido ──────────────────────────────────────────
 
 class AddPedidoPage extends StatefulWidget {
   final Usuario usuario;
@@ -469,8 +462,6 @@ class _AddPedidoPageState extends State<AddPedidoPage> {
   }
 }
 
-// ── Pedidos do cliente ────────────────────────────────────────
-
 class PedidosClientePage extends StatefulWidget {
   final Usuario usuario;
   const PedidosClientePage({super.key, required this.usuario});
@@ -541,8 +532,6 @@ class _PedidosClientePageState extends State<PedidosClientePage> {
     );
   }
 }
-
-// ── Widgets auxiliares ────────────────────────────────────────
 
 class _ErroWidget extends StatelessWidget {
   final String mensagem;

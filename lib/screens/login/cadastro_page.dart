@@ -75,7 +75,6 @@ class _CadastroPageState extends State<CadastroPage> {
         backgroundColor: AppTheme.background,
         body: Column(
           children: [
-            // ── Header ──────────────────────────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 40),
@@ -99,7 +98,6 @@ class _CadastroPageState extends State<CadastroPage> {
               ),
             ),
 
-            // ── Formulário ───────────────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
