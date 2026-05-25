@@ -3,7 +3,7 @@ Repositorio feito com o proposito de auxiliar no desenvolvimento do Projeto Inte
 
 ## Como iniciar
 
-Abra o docker desktop, abra a linha de comando do PC e digite "docker-compose up --build -d"
+Abra o docker desktop, abra a linha de comando do PC, vá até a pasta raiz do projeto e digite "docker-compose up --build -d"
 
 Aguarde o docker finalizar a inicialização do container e acesse "http://localhost:8080/"
 
