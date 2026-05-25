@@ -6,3 +6,5 @@ Repositorio feito com o proposito de auxiliar no desenvolvimento do Projeto Inte
 Abra o docker desktop, abra a linha de comando do PC e digite "docker-compose up --build -d"
 
 Aguarde o docker finalizar a inicialização do container e acesse "http://localhost:8080/"
+
+Para finalidade de testes o login de admin é "admin@admin.com" e a senha é "admin123"

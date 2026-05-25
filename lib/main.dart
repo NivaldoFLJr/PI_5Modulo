@@ -11,6 +11,7 @@ import 'services/api_service.dart';
 
 import 'screens/pedidos/pedidos_page.dart';
 import 'screens/relatorios/relatorios_page.dart';
+import 'screens/login/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const HomePage(),
+      home: const LoginPage(),
     );
   }
 }

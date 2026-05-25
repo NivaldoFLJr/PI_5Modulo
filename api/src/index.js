@@ -144,6 +144,19 @@ app.patch('/estoque/:id', async (req, res) => {
   }
 });
 
+app.post('/estoque', async (req, res) => {
+  const { produto_id, quantidade_atual, quantidade_minima } = req.body;
+  try {
+    const [{ insertId }] = await db.query(
+      'INSERT INTO estoque (produto_id, quantidade_atual, quantidade_minima) VALUES (?, ?, ?)',
+      [produto_id, quantidade_atual, quantidade_minima ?? 10]
+    );
+    res.status(201).json({ id: insertId });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Clientes ──────────────────────────────────────────────────
 app.get('/clientes', async (_, res) => {
   try {
@@ -165,5 +178,79 @@ app.post('/clientes', async (req, res) => {
   }
 });
 
+// ── Auth ──────────────────────────────────────────────────────
+app.post('/login', async (req, res) => {
+  const { email, senha } = req.body;
+  try {
+    const [[usuario]] = await db.query(
+      'SELECT * FROM usuarios WHERE email = ? AND senha = ?',
+      [email, senha]
+    );
+    if (!usuario) {
+      return res.status(401).json({ error: 'Email ou senha inválidos' });
+    }
+    res.json({
+      id:         usuario.id,
+      nome:       usuario.nome,
+      email:      usuario.email,
+      role:       usuario.role,
+      cliente_id: usuario.cliente_id,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Pedidos por cliente ───────────────────────────────────────
+app.get('/pedidos/cliente/:clienteId', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        p.id, c.nome AS cliente, p.status, p.valor_total, p.criado_em,
+        GROUP_CONCAT(CONCAT(pi.quantidade, 'x ', pr.nome) SEPARATOR ' • ') AS itens
+      FROM pedidos p
+      JOIN clientes c ON c.id = p.cliente_id
+      JOIN pedido_itens pi ON pi.pedido_id = p.id
+      JOIN produtos pr ON pr.id = pi.produto_id
+      WHERE p.cliente_id = ?
+      GROUP BY p.id
+      ORDER BY p.criado_em DESC
+    `, [req.params.clienteId]);
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Cadastro ──────────────────────────────────────────────────
+app.post('/cadastro', async (req, res) => {
+  const { nome, email, senha } = req.body;
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Cria o cliente vinculado ao usuário
+    const [{ insertId: clienteId }] = await conn.query(
+      'INSERT INTO clientes (nome) VALUES (?)', [nome]
+    );
+
+    // Cria o usuário já vinculado ao cliente
+    const [{ insertId: usuarioId }] = await conn.query(
+      'INSERT INTO usuarios (nome, email, senha, role, cliente_id) VALUES (?, ?, ?, "cliente", ?)',
+      [nome, email, senha, clienteId]
+    );
+
+    await conn.commit();
+    res.status(201).json({ id: usuarioId, nome, email, role: 'cliente', cliente_id: clienteId });
+  } catch (e) {
+    await conn.rollback();
+    if (e.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Email já cadastrado' });
+    }
+    res.status(500).json({ error: e.message });
+  } finally {
+    conn.release();
+  }
+});
 // ─────────────────────────────────────────────────────────────
 app.listen(3000, () => console.log('API rodando na porta 3000'));

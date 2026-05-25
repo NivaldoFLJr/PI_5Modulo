@@ -65,3 +65,18 @@ INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unitario) VAL
   (1, 1, 50, 1.00), (1, 3, 20, 1.50),
   (2, 1, 100, 1.00), (2, 4, 100, 1.50),
   (3, 4, 30, 1.00);
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  senha VARCHAR(255) NOT NULL,
+  role ENUM('admin', 'cliente') DEFAULT 'cliente',
+  cliente_id INT,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
+
+-- Admin padrão (senha: admin123)
+INSERT INTO usuarios (nome, email, senha, role) VALUES
+  ('Administrador', 'admin@admin.com', 'admin123', 'admin');

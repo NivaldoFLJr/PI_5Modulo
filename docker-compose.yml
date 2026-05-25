@@ -20,7 +20,7 @@ services:
       MYSQL_USER: bete
       MYSQL_PASSWORD: bete123
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./api/db/init.sql:/docker-entrypoint-initdb.d/init.sql

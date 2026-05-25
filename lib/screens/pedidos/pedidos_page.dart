@@ -5,6 +5,7 @@ import '../../theme/app_theme.dart';
 import '../../components/app_bottom_nav.dart';
 import '../../components/app_scaffold.dart';
 import '../../services/api_service.dart';
+import '../../services/api_client.dart'; // ← import adicionado
 import '../relatorios/relatorios_page.dart';
 
 class PedidosPage extends StatelessWidget {
@@ -126,7 +127,6 @@ class _PedidosHomeState extends State<_PedidosHome> {
             context,
             MaterialPageRoute(builder: (_) => const AddPedidoPage()),
           );
-          // Recarrega ao voltar da tela de adicionar
           _carregar();
         },
         child: const Icon(Icons.add, color: Colors.white),
@@ -522,13 +522,15 @@ class _AddPedidoPageState extends State<AddPedidoPage> {
     setState(() => _salvando = true);
 
     try {
-      int clienteId = _clienteSelecionado!.id;
+      // ← Corrigido: resolve o clienteId sem usar ! quando pode ser null
+      int clienteId;
 
-      // Cria cliente novo se necessário
       if (_novoCliente.trim().isNotEmpty) {
         await ApiService.criarCliente(_novoCliente.trim());
         final clientes = await ApiService.getClientes();
         clienteId = clientes.last.id;
+      } else {
+        clienteId = _clienteSelecionado!.id;
       }
 
       final itens = itensSelecionados.map((e) {
@@ -536,8 +538,7 @@ class _AddPedidoPageState extends State<AddPedidoPage> {
         return {
           'produto_id': produto.id,
           'quantidade': e.value,
-          'preco_unitario':
-              (produto.precoVenda / produto.quantidade),
+          'preco_unitario': (produto.precoVenda / produto.quantidade),
         };
       }).toList();
 
@@ -685,6 +686,88 @@ class _AddPedidoPageState extends State<AddPedidoPage> {
                     ),
                   ],
                 ),
+    );
+  }
+}
+
+class PedidosClientePage extends StatefulWidget {
+  final Usuario usuario;
+  const PedidosClientePage({super.key, required this.usuario});
+
+  @override
+  State<PedidosClientePage> createState() => _PedidosClientePageState();
+}
+
+class _PedidosClientePageState extends State<PedidosClientePage> {
+  List<PedidoApi> _pedidos = [];
+  bool _loading = true;
+  String? _erro;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    try {
+      setState(() { _loading = true; _erro = null; });
+      final pedidos = await ApiService.getPedidosPorCliente(
+        widget.usuario.clienteId!,
+      );
+      setState(() { _pedidos = pedidos; _loading = false; });
+    } catch (e) {
+      setState(() { _erro = 'Erro ao carregar pedidos'; _loading = false; });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      title: 'Meus Pedidos',
+      currentIndex: 0,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+            ),
+            child: Text(
+              'Olá, ${widget.usuario.nome}!',
+              style: AppTheme.metricValueStyle,
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _carregar,
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _erro != null
+                      ? _ErroWidget(mensagem: _erro!, onRetry: _carregar)
+                      : _pedidos.isEmpty
+                          ? const _EmptyWidget()
+                          : ListView(
+                              padding: const EdgeInsets.fromLTRB(16, 20, 16, 110),
+                              children: [
+                                Text('Meus Pedidos', style: AppTheme.sectionTitleStyle),
+                                const SizedBox(height: 18),
+                                ..._pedidos.map((pedido) => PedidoCard(
+                                      pedido: pedido,
+                                      onStatusChanged: (_) {},
+                                    )),
+                              ],
+                            ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

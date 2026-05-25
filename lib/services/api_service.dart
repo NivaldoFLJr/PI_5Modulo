@@ -17,8 +17,8 @@ class Metricas {
 
   factory Metricas.fromJson(Map<String, dynamic> j) => Metricas(
         totalPedidos: j['total_pedidos'],
-        faturado:     (j['faturado'] as num).toDouble(),
-        lucro:        (j['lucro'] as num).toDouble(),
+        faturado:     double.parse(j['faturado'].toString()),
+        lucro:        double.parse(j['lucro'].toString()),
         margem:       double.parse(j['margem'].toString()),
       );
 }
@@ -43,7 +43,7 @@ class PedidoApi {
         cliente:    j['cliente'],
         itens:      j['itens'] ?? '',
         status:     j['status'],
-        valorTotal: (j['valor_total'] as num).toDouble(),
+        valorTotal: double.parse(j['valor_total'].toString()), // ← corrigido
       );
 }
 
@@ -68,16 +68,16 @@ class ProdutoApi {
     required this.categoria,
   });
 
-  double get lucro      => precoVenda - precoCusto;
-  double get margemPct  => (lucro / precoVenda) * 100;
+  double get lucro         => precoVenda - precoCusto;
+  double get margemPct     => (lucro / precoVenda) * 100;
   double get custoUnitario => precoCusto / quantidade;
 
   factory ProdutoApi.fromJson(Map<String, dynamic> j) => ProdutoApi(
         id:          j['id'],
         nome:        j['nome'],
         unidade:     j['unidade'],
-        precoVenda:  (j['preco_venda'] as num).toDouble(),
-        precoCusto:  (j['preco_custo'] as num).toDouble(),
+        precoVenda:  double.parse(j['preco_venda'].toString()),
+        precoCusto:  double.parse(j['preco_custo'].toString()),
         quantidade:  j['quantidade'],
         icone:       j['icone'] ?? 'basket',
         categoria:   j['categoria'] ?? 'salgado',
@@ -155,4 +155,53 @@ class ApiService {
   static Future<void> criarCliente(String nome) async {
     await ApiClient.post('/clientes', {'nome': nome});
   }
+
+  static Future<Usuario> login(String email, String senha) async {
+    final data = await ApiClient.post('/login', {
+      'email': email,
+      'senha': senha,
+    });
+    return Usuario.fromJson(data);
+  }
+
+  static Future<List<PedidoApi>> getPedidosPorCliente(int clienteId) async {
+    final data = await ApiClient.get('/pedidos/cliente/$clienteId') as List;
+    return data.map((e) => PedidoApi.fromJson(e)).toList();
+  }
+
+  static Future<Usuario> cadastrar(String nome, String email, String senha) async {
+    final data = await ApiClient.post('/cadastro', {
+      'nome':  nome,
+      'email': email,
+      'senha': senha,
+    });
+    return Usuario.fromJson(data);
+  }
+}
+  
+
+class Usuario {
+  final int id;
+  final String nome;
+  final String email;
+  final String role;
+  final int? clienteId;
+
+  Usuario({
+    required this.id,
+    required this.nome,
+    required this.email,
+    required this.role,
+    this.clienteId,
+  });
+
+  bool get isAdmin => role == 'admin';
+
+  factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
+        id:         j['id'],
+        nome:       j['nome'],
+        email:      j['email'],
+        role:       j['role'],
+        clienteId:  j['cliente_id'],
+      );
 }
