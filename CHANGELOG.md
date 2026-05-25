@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/NivaldoFLJr/PI_5Modulo/compare/v1.0.0...v1.0.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* release.yml funcional ([f8be30d](https://github.com/NivaldoFLJr/PI_5Modulo/commit/f8be30d8e72e61c8528ab8caf8bd67602a172121))
+
 # 1.0.0 (2026-05-25)
 
 
