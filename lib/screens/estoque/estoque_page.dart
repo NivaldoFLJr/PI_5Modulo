@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
-import '../../components/app_bottom_nav.dart';
 import '../../components/app_scaffold.dart';
 import '../../services/api_service.dart';
-import '../../services/api_client.dart';
-import '../relatorios/relatorios_page.dart';
-import '../pedidos/pedidos_page.dart';
-import '../../../main.dart';
 import 'menu_estoque.dart';
 
+// ← Sem import de main.dart ou AppBottomNav — o AdminShell cuida da nav
+
 class EstoquePage extends StatefulWidget {
-  const EstoquePage({super.key});
+  final Usuario usuario;
+  const EstoquePage({super.key, required this.usuario});
 
   @override
   State<EstoquePage> createState() => _EstoquePageState();
 }
 
 class _EstoquePageState extends State<EstoquePage> {
-  final int _navIndex = 1;
   List<EstoqueItem> _itens = [];
   List<ProdutoApi> _produtos = [];
   bool _loading = true;
@@ -81,27 +78,8 @@ class _EstoquePageState extends State<EstoquePage> {
 
     return AppScaffold(
       title: 'Estoque',
-      currentIndex: _navIndex,
-      bottomNavigationBar: AppBottomNav(
-        currentIndex: _navIndex,
-        onTap: (index) {
-          if (index == _navIndex) return;
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const MyApp()));
-              break;
-            case 2:
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const PedidosPage()));
-              break;
-            case 3:
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const RelatoriosPage()));
-              break;
-          }
-        },
-      ),
+      currentIndex: 1,
+      // SEM bottomNavigationBar — o AdminShell já gerencia
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppTheme.primaryDeep,
         onPressed: _openOpcoes,
@@ -110,7 +88,6 @@ class _EstoquePageState extends State<EstoquePage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Tabs ────────────────────────────────────────────────
           Container(
             color: AppTheme.primary,
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -123,15 +100,12 @@ class _EstoquePageState extends State<EstoquePage> {
                   ativo: false,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (_) => MateriaPrimaPage(onSalvo: _carregar)),
+                    MaterialPageRoute(builder: (_) => MateriaPrimaPage(onSalvo: _carregar)),
                   ),
                 ),
               ],
             ),
           ),
-
-          // ── Grid ────────────────────────────────────────────────
           Expanded(
             child: RefreshIndicator(
               onRefresh: _carregar,
@@ -144,15 +118,13 @@ class _EstoquePageState extends State<EstoquePage> {
                           : GridView.builder(
                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
                               itemCount: _itens.length,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 12,
                                 mainAxisSpacing: 12,
                                 childAspectRatio: 0.85,
                               ),
-                              itemBuilder: (_, i) =>
-                                  ProdutoEstoqueCard(item: _itens[i]),
+                              itemBuilder: (_, i) => ProdutoEstoqueCard(item: _itens[i]),
                             ),
             ),
           ),
@@ -162,7 +134,7 @@ class _EstoquePageState extends State<EstoquePage> {
   }
 }
 
-// ── Tab ───────────────────────────────────────────────────────────────────────
+// ── Tab ───────────────────────────────────────────────────────
 
 class _Tab extends StatelessWidget {
   final String label;
@@ -189,49 +161,32 @@ class _Tab extends StatelessWidget {
   }
 }
 
-// ── Card de produto no estoque ────────────────────────────────────────────────
+// ── Card de produto no estoque ────────────────────────────────
 
 class ProdutoEstoqueCard extends StatelessWidget {
   final EstoqueItem item;
-
   const ProdutoEstoqueCard({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
     final baixo = item.estaBaixo;
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: baixo ? AppTheme.red.withOpacity(0.4) : Colors.transparent,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: baixo ? AppTheme.red.withOpacity(0.4) : Colors.transparent),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         children: [
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: baixo
-                    ? AppTheme.red.withOpacity(0.08)
-                    : AppTheme.background,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
+                color: baixo ? AppTheme.red.withOpacity(0.08) : AppTheme.background,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: Center(
-                child: Icon(
-                  Icons.inventory_2_outlined,
-                  size: 40,
-                  color: baixo ? AppTheme.red : AppTheme.primaryDeep,
-                ),
+                child: Icon(Icons.inventory_2_outlined, size: 40, color: baixo ? AppTheme.red : AppTheme.primaryDeep),
               ),
             ),
           ),
@@ -239,35 +194,22 @@ class ProdutoEstoqueCard extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppTheme.background,
-              borderRadius:
-                  const BorderRadius.vertical(bottom: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.nome,
-                    style: AppTheme.cardTitleStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(item.nome, style: AppTheme.cardTitleStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${item.quantidadeAtual} ${item.unidade}',
-                        style: AppTheme.cardSubtitleStyle),
+                    Text('${item.quantidadeAtual} ${item.unidade}', style: AppTheme.cardSubtitleStyle),
                     if (baixo)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppTheme.red.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text('Baixo',
-                            style: TextStyle(
-                                fontSize: 10,
-                                color: AppTheme.red,
-                                fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: AppTheme.red.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                        child: Text('Baixo', style: TextStyle(fontSize: 10, color: AppTheme.red, fontWeight: FontWeight.bold)),
                       ),
                   ],
                 ),
@@ -280,12 +222,11 @@ class ProdutoEstoqueCard extends StatelessWidget {
   }
 }
 
-// ── Widgets auxiliares ────────────────────────────────────────────────────────
+// ── Widgets auxiliares ────────────────────────────────────────
 
 class _ErroWidget extends StatelessWidget {
   final String mensagem;
   final VoidCallback onRetry;
-
   const _ErroWidget({required this.mensagem, required this.onRetry});
 
   @override
@@ -300,8 +241,7 @@ class _ErroWidget extends StatelessWidget {
             const SizedBox(height: 12),
             Text(mensagem, style: AppTheme.cardSubtitleStyle),
             const SizedBox(height: 16),
-            ElevatedButton(
-                onPressed: onRetry, child: const Text('Tentar novamente')),
+            ElevatedButton(onPressed: onRetry, child: const Text('Tentar novamente')),
           ],
         ),
       ),
@@ -320,11 +260,9 @@ class _EmptyWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.inventory_2_outlined,
-                color: AppTheme.textMuted, size: 48),
+            Icon(Icons.inventory_2_outlined, color: AppTheme.textMuted, size: 48),
             const SizedBox(height: 12),
-            Text('Nenhum item no estoque',
-                style: AppTheme.cardSubtitleStyle),
+            Text('Nenhum item no estoque', style: AppTheme.cardSubtitleStyle),
           ],
         ),
       ),

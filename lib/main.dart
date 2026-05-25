@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'theme/app_theme.dart';
 import 'components/app_bottom_nav.dart';
 import 'components/app_scaffold.dart';
 import 'services/api_service.dart';
-
 import 'screens/pedidos/pedidos_page.dart';
+import 'screens/estoque/estoque_page.dart';
 import 'screens/relatorios/relatorios_page.dart';
 import 'screens/login/login_page.dart';
 
@@ -28,7 +26,6 @@ class MyApp extends StatelessWidget {
         statusBarIconBrightness: Brightness.light,
       ),
     );
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
@@ -37,24 +34,53 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ── Shell do admin ────────────────────────────────────────────
+
+class AdminShell extends StatefulWidget {
+  final Usuario usuario;
+  const AdminShell({super.key, required this.usuario});
+
+  @override
+  State<AdminShell> createState() => _AdminShellState();
+}
+
+class _AdminShellState extends State<AdminShell> {
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      HomePage(usuario: widget.usuario),
+      EstoquePage(usuario: widget.usuario),
+      PedidosPage(usuario: widget.usuario),
+      RelatoriosPage(usuario: widget.usuario),
+    ];
+
+    return Scaffold(
+      body: pages[_index],
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: _index,
+        onTap: (i) => setState(() => _index = i),
+      ),
+    );
+  }
+}
+
+// ── Home do admin ─────────────────────────────────────────────
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final Usuario usuario;
+  const HomePage({super.key, required this.usuario});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _navIndex = 0;
-
-  final PageController _shortcutController = PageController(
-    viewportFraction: 0.88,
-  );
-
+  final PageController _shortcutController = PageController(viewportFraction: 0.88);
   Timer? _autoScrollTimer;
   int _currentShortcutPage = 0;
 
-  // ── Estado das métricas ───────────────────────────────────────
   Metricas? _metricas;
   bool _loadingMetricas = true;
   String? _erroMetricas;
@@ -64,55 +90,43 @@ class _HomePageState extends State<HomePage> {
       title: 'Relatórios',
       description: 'Acompanhe vendas e desempenho',
       icon: Icons.insert_chart_outlined,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const RelatoriosPage()),
-        );
-      },
+      onTap: () => _navigateTo(3),
     ),
     _ShortcutAction(
       title: 'Metas',
       description: 'Veja o progresso das metas',
       icon: Icons.emoji_events_outlined,
-      onTap: () {
-        // TODO: Navegar para Metas
-      },
+      onTap: () {},
     ),
     _ShortcutAction(
       title: 'Pedidos',
       description: 'Gerencie pedidos recentes',
       icon: Icons.receipt_long_outlined,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PedidosPage()),
-        );
-      },
+      onTap: () => _navigateTo(2),
     ),
     _ShortcutAction(
       title: 'Estoque',
       description: 'Controle produtos e insumos',
       icon: Icons.inventory_2_outlined,
-      onTap: () {
-        // TODO: Navegar para Estoque
-      },
+      onTap: () => _navigateTo(1),
     ),
   ];
+
+  void _navigateTo(int index) {
+    // Sobe para o AdminShell e troca a aba
+    final shell = context.findAncestorStateOfType<_AdminShellState>();
+    shell?.setState(() => shell._index = index);
+  }
 
   @override
   void initState() {
     super.initState();
     _carregarMetricas();
-
     _autoScrollTimer = Timer.periodic(
       const Duration(seconds: 5),
       (_) {
         if (!mounted || !_shortcutController.hasClients) return;
-
-        final int nextPage =
-            (_currentShortcutPage + 1) % _shortcutActions.length;
-
+        final int nextPage = (_currentShortcutPage + 1) % _shortcutActions.length;
         _shortcutController.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 500),
@@ -124,22 +138,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _carregarMetricas() async {
     try {
-      setState(() {
-        _loadingMetricas = true;
-        _erroMetricas = null;
-      });
-
+      setState(() { _loadingMetricas = true; _erroMetricas = null; });
       final metricas = await ApiService.getMetricas();
-
-      setState(() {
-        _metricas = metricas;
-        _loadingMetricas = false;
-      });
+      setState(() { _metricas = metricas; _loadingMetricas = false; });
     } catch (e) {
-      setState(() {
-        _erroMetricas = 'Erro ao carregar métricas';
-        _loadingMetricas = false;
-      });
+      setState(() { _erroMetricas = 'Erro ao carregar métricas'; _loadingMetricas = false; });
     }
   }
 
@@ -160,52 +163,18 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Home',
-      currentIndex: _navIndex,
-
-      bottomNavigationBar: AppBottomNav(
-        currentIndex: _navIndex,
-        onTap: (index) {
-          if (index == _navIndex) return;
-
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const HomePage()),
-              );
-              break;
-            case 1:
-              // Página de estoque ainda não criada
-              break;
-            case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const PedidosPage()),
-              );
-              break;
-            case 3:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const RelatoriosPage()),
-              );
-              break;
-          }
-        },
-      ),
-
+      currentIndex: 0,
+      // SEM bottomNavigationBar aqui — o AdminShell já cuida disso
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _carregarMetricas,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              // ── Revenue Card ────────────────────────────────────────
+              // ── Revenue Card ──────────────────────────────────
               Container(
                 height: 92,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppTheme.primary,
                   borderRadius: BorderRadius.circular(12),
@@ -213,64 +182,38 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'FATURADO',
-                      style: AppTheme.metricLabelStyle,
-                    ),
-
+                    Text('FATURADO', style: AppTheme.metricLabelStyle),
                     const SizedBox(height: 8),
-
                     _loadingMetricas
                         ? const SizedBox(
                             height: 24,
                             width: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : Text(
-                            _faturadoText,
-                            style: AppTheme.metricValueStyle,
-                          ),
-
+                        : Text(_faturadoText, style: AppTheme.metricValueStyle),
                     const SizedBox(height: 8),
-
-                    Container(
-                      width: double.infinity,
-                      height: 1,
-                      color: Colors.white.withOpacity(0.35),
-                    ),
+                    Container(width: double.infinity, height: 1, color: Colors.white.withOpacity(0.35)),
                   ],
                 ),
               ),
-
               const SizedBox(height: 18),
 
-              // ── Shortcut Carousel com dots ──────────────────────────
+              // ── Shortcut Carousel ─────────────────────────────
               Column(
                 children: [
                   SizedBox(
                     height: 140,
                     child: ScrollConfiguration(
                       behavior: const MaterialScrollBehavior().copyWith(
-                        dragDevices: const {
-                          PointerDeviceKind.touch,
-                          PointerDeviceKind.mouse,
-                        },
+                        dragDevices: const {PointerDeviceKind.touch, PointerDeviceKind.mouse},
                       ),
                       child: PageView.builder(
                         controller: _shortcutController,
                         itemCount: _shortcutActions.length,
                         physics: const PageScrollPhysics(),
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentShortcutPage = index;
-                          });
-                        },
+                        onPageChanged: (index) => setState(() => _currentShortcutPage = index),
                         itemBuilder: (context, index) {
                           final action = _shortcutActions[index];
-
                           return Padding(
                             padding: const EdgeInsets.only(right: 10),
                             child: _ShortcutCard(
@@ -284,81 +227,55 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _shortcutActions.length,
-                      (index) {
-                        final bool isActive = _currentShortcutPage == index;
-
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          width: isActive ? 16 : 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? AppTheme.primaryDeep
-                                : AppTheme.primaryDeep.withOpacity(0.30),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        );
-                      },
-                    ),
+                    children: List.generate(_shortcutActions.length, (index) {
+                      final bool isActive = _currentShortcutPage == index;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: isActive ? 16 : 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppTheme.primaryDeep
+                              : AppTheme.primaryDeep.withOpacity(0.30),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),
-
               const SizedBox(height: 18),
 
-              // ── Graph Highlight Button com DonutChart ───────────────
+              // ── Graph Highlight ───────────────────────────────
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RelatoriosPage()),
-                  );
-                },
+                onTap: () => _navigateTo(3),
                 child: Container(
                   height: 150,
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppTheme.primary.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.primary.withOpacity(0.35),
-                    ),
+                    border: Border.all(color: AppTheme.primary.withOpacity(0.35)),
                   ),
                   child: Row(
                     children: [
                       SizedBox(
                         width: 86,
                         height: 86,
-                        child: CustomPaint(
-                          painter: _DonutChartPainter(),
-                        ),
+                        child: CustomPaint(painter: _DonutChartPainter()),
                       ),
-
                       const SizedBox(width: 20),
-
                       Expanded(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Gráficos',
-                              style: AppTheme.cardTitleStyle.copyWith(
-                                fontSize: 22,
-                              ),
-                            ),
-
+                            Text('Gráficos', style: AppTheme.cardTitleStyle.copyWith(fontSize: 22)),
                             const SizedBox(height: 6),
-
-                            // Mostra lucro e margem se carregados
                             if (_metricas != null) ...[
                               Text(
                                 'Lucro: R\$ ${_metricas!.lucro.toStringAsFixed(2).replaceAll('.', ',')}',
@@ -376,26 +293,17 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-
                       Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryDeep,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white,
-                          size: 18,
-                        ),
+                        decoration: const BoxDecoration(color: AppTheme.primaryDeep, shape: BoxShape.circle),
+                        child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
                       ),
                     ],
                   ),
                 ),
               ),
 
-              // ── Erro (se houver) ────────────────────────────────────
               if (_erroMetricas != null) ...[
                 const SizedBox(height: 16),
                 Container(
@@ -407,19 +315,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: AppTheme.red, size: 18),
+                      const Icon(Icons.error_outline, color: AppTheme.red, size: 18),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _erroMetricas!,
-                          style: const TextStyle(color: AppTheme.red),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: _carregarMetricas,
-                        child: const Text('Tentar novamente'),
-                      ),
+                      Expanded(child: Text(_erroMetricas!, style: const TextStyle(color: AppTheme.red))),
+                      TextButton(onPressed: _carregarMetricas, child: const Text('Tentar novamente')),
                     ],
                   ),
                 ),
@@ -432,20 +331,14 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ── Helpers internos ──────────────────────────────────────────────────────────
+// ── Helpers internos ──────────────────────────────────────────
 
 class _ShortcutAction {
   final String title;
   final String description;
   final IconData icon;
   final VoidCallback onTap;
-
-  _ShortcutAction({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.onTap,
-  });
+  _ShortcutAction({required this.title, required this.description, required this.icon, required this.onTap});
 }
 
 class _ShortcutCard extends StatelessWidget {
@@ -454,12 +347,7 @@ class _ShortcutCard extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _ShortcutCard({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.onTap,
-  });
+  const _ShortcutCard({required this.title, required this.description, required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -476,19 +364,10 @@ class _ShortcutCard extends StatelessWidget {
               Container(
                 width: 54,
                 height: 54,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: AppTheme.primaryDeep,
-                  size: 28,
-                ),
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: Icon(icon, color: AppTheme.primaryDeep, size: 28),
               ),
-
               const SizedBox(width: 16),
-
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -500,12 +379,7 @@ class _ShortcutCard extends StatelessWidget {
                   ],
                 ),
               ),
-
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: AppTheme.primaryDeep,
-              ),
+              const Icon(Icons.arrow_forward_ios, size: 16, color: AppTheme.primaryDeep),
             ],
           ),
         ),
@@ -520,19 +394,16 @@ class _DonutChartPainter extends CustomPainter {
     final Offset center = size.center(Offset.zero);
     final double radius = size.width / 2;
     final Rect rect = Rect.fromCircle(center: center, radius: radius);
-
     final Paint basePaint = Paint()
       ..color = AppTheme.primary.withOpacity(0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 16
       ..strokeCap = StrokeCap.round;
-
     final Paint accentPaint = Paint()
       ..color = AppTheme.primaryDeep
       ..style = PaintingStyle.stroke
       ..strokeWidth = 16
       ..strokeCap = StrokeCap.round;
-
     canvas.drawArc(rect, 0.2, 5.0, false, basePaint);
     canvas.drawArc(rect, 2.0, 1.4, false, accentPaint);
   }

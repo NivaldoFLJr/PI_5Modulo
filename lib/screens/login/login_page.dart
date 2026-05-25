@@ -22,10 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _senhaVisivel = false;
 
   Future<void> _login() async {
-    setState(() {
-      _loading = true;
-      _erro = null;
-    });
+    setState(() { _loading = true; _erro = null; });
 
     try {
       final usuario = await ApiService.login(
@@ -36,23 +33,19 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (usuario.isAdmin) {
+        // ← Vai para o AdminShell passando o usuario — sem reconstruir MyApp
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const MyApp()),
+          MaterialPageRoute(builder: (_) => AdminShell(usuario: usuario)),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => ClienteHome(usuario: usuario),
-          ),
+          MaterialPageRoute(builder: (_) => ClienteHome(usuario: usuario)),
         );
       }
     } catch (e) {
-      setState(() {
-        _erro = 'Email ou senha inválidos';
-        _loading = false;
-      });
+      setState(() { _erro = 'Email ou senha inválidos'; _loading = false; });
     }
   }
 
@@ -71,7 +64,6 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: AppTheme.background,
         body: Column(
           children: [
-            // ── Header ──────────────────────────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 40),
@@ -87,15 +79,10 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Text('Bem-vindo!', style: AppTheme.metricValueStyle),
                   const SizedBox(height: 4),
-                  Text(
-                    'Faça login para continuar',
-                    style: AppTheme.metricLabelStyle,
-                  ),
+                  Text('Faça login para continuar', style: AppTheme.metricLabelStyle),
                 ],
               ),
             ),
-
-            // ── Formulário ───────────────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -103,20 +90,16 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 32),
-
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: 'Email',
                         prefixIcon: const Icon(Icons.email_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     TextField(
                       controller: _senhaController,
                       obscureText: !_senhaVisivel,
@@ -124,20 +107,12 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: 'Senha',
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
-                          icon: Icon(
-                            _senhaVisivel
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                          ),
-                          onPressed: () =>
-                              setState(() => _senhaVisivel = !_senhaVisivel),
+                          icon: Icon(_senhaVisivel ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                          onPressed: () => setState(() => _senhaVisivel = !_senhaVisivel),
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
-
                     if (_erro != null) ...[
                       const SizedBox(height: 12),
                       Container(
@@ -148,38 +123,28 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.error_outline,
-                                color: AppTheme.red, size: 18),
+                            const Icon(Icons.error_outline, color: AppTheme.red, size: 18),
                             const SizedBox(width: 8),
-                            Text(_erro!,
-                                style:
-                                    const TextStyle(color: AppTheme.red)),
+                            Text(_erro!, style: const TextStyle(color: AppTheme.red)),
                           ],
                         ),
                       ),
                     ],
-
                     const SizedBox(height: 32),
-
                     SizedBox(
                       height: 54,
                       child: ElevatedButton(
                         onPressed: _loading ? null : _login,
                         child: _loading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
-                            : Text('Entrar',
-                                style: AppTheme.buttonTextStyle),
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : Text('Entrar', style: AppTheme.buttonTextStyle),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     TextButton(
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const CadastroPage()),
+                        MaterialPageRoute(builder: (_) => const CadastroPage()),
                       ),
                       child: const Text('Não tem conta? Cadastre-se'),
                     ),
@@ -210,8 +175,8 @@ class _ClienteHomeState extends State<ClienteHome> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      PedidosClientePage(usuario: widget.usuario), // ← widget.usuario
-      CardapioPage(usuario: widget.usuario),        // ← widget.usuario
+      PedidosClientePage(usuario: widget.usuario),
+      CardapioPage(usuario: widget.usuario),
     ];
 
     return Scaffold(
@@ -221,14 +186,8 @@ class _ClienteHomeState extends State<ClienteHome> {
         onTap: (i) => setState(() => _index = i),
         selectedItemColor: AppTheme.primaryDeep,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            label: 'Meus Pedidos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu_outlined),
-            label: 'Cardápio',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'Meus Pedidos'),
+          BottomNavigationBarItem(icon: Icon(Icons.restaurant_menu_outlined), label: 'Cardápio'),
         ],
       ),
     );

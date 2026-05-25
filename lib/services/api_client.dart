@@ -7,8 +7,16 @@ class ApiClient {
     defaultValue: 'http://localhost:3000',
   );
 
+  static void _checarStatus(http.Response res) {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      final body = jsonDecode(res.body);
+      throw Exception(body['error'] ?? 'Erro ${res.statusCode}');
+    }
+  }
+
   static Future<dynamic> get(String path) async {
     final res = await http.get(Uri.parse('$_base$path'));
+    _checarStatus(res);
     return jsonDecode(res.body);
   }
 
@@ -18,6 +26,7 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),
     );
+    _checarStatus(res);
     return jsonDecode(res.body);
   }
 
@@ -27,6 +36,7 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),
     );
+    _checarStatus(res);
     return jsonDecode(res.body);
   }
 }

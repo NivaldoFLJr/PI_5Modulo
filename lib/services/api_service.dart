@@ -23,6 +23,22 @@ class Metricas {
       );
 }
 
+class GraficoDia {
+  final String dia;
+  final double faturamento;
+  final double custo;
+
+  GraficoDia({required this.dia, required this.faturamento, required this.custo});
+
+  double get lucro => faturamento - custo;
+
+  factory GraficoDia.fromJson(Map<String, dynamic> j) => GraficoDia(
+        dia:         j['dia'],
+        faturamento: double.parse(j['faturamento'].toString()),
+        custo:       double.parse(j['custo'].toString()),
+      );
+}
+
 class PedidoApi {
   final int id;
   final String cliente;
@@ -43,7 +59,7 @@ class PedidoApi {
         cliente:    j['cliente'],
         itens:      j['itens'] ?? '',
         status:     j['status'],
-        valorTotal: double.parse(j['valor_total'].toString()), // ← corrigido
+        valorTotal: double.parse(j['valor_total'].toString()),
       );
 }
 
@@ -73,14 +89,14 @@ class ProdutoApi {
   double get custoUnitario => precoCusto / quantidade;
 
   factory ProdutoApi.fromJson(Map<String, dynamic> j) => ProdutoApi(
-        id:          j['id'],
-        nome:        j['nome'],
-        unidade:     j['unidade'],
-        precoVenda:  double.parse(j['preco_venda'].toString()),
-        precoCusto:  double.parse(j['preco_custo'].toString()),
-        quantidade:  j['quantidade'],
-        icone:       j['icone'] ?? 'basket',
-        categoria:   j['categoria'] ?? 'salgado',
+        id:         j['id'],
+        nome:       j['nome'],
+        unidade:    j['unidade'],
+        precoVenda: double.parse(j['preco_venda'].toString()),
+        precoCusto: double.parse(j['preco_custo'].toString()),
+        quantidade: j['quantidade'],
+        icone:      j['icone'] ?? 'basket',
+        categoria:  j['categoria'] ?? 'salgado',
       );
 }
 
@@ -120,12 +136,43 @@ class ClienteApi {
       ClienteApi(id: j['id'], nome: j['nome']);
 }
 
+class Usuario {
+  final int id;
+  final String nome;
+  final String email;
+  final String role;
+  final int? clienteId;
+
+  Usuario({
+    required this.id,
+    required this.nome,
+    required this.email,
+    required this.role,
+    this.clienteId,
+  });
+
+  bool get isAdmin => role == 'admin';
+
+  factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
+        id:        j['id'],
+        nome:      j['nome']  ?? 'Usuário',
+        email:     j['email'] ?? '',
+        role:      j['role']  ?? 'cliente',
+        clienteId: j['cliente_id'],
+      );
+}
+
 // ── Serviços ──────────────────────────────────────────────────
 
 class ApiService {
-  static Future<Metricas> getMetricas() async {
-    final data = await ApiClient.get('/metricas');
+  static Future<Metricas> getMetricas({String periodo = 'todos'}) async {
+    final data = await ApiClient.get('/metricas?periodo=$periodo');
     return Metricas.fromJson(data);
+  }
+
+  static Future<List<GraficoDia>> getGrafico() async {
+    final data = await ApiClient.get('/relatorios/grafico') as List;
+    return data.map((e) => GraficoDia.fromJson(e)).toList();
   }
 
   static Future<List<PedidoApi>> getPedidos() async {
@@ -177,31 +224,4 @@ class ApiService {
     });
     return Usuario.fromJson(data);
   }
-}
-  
-
-class Usuario {
-  final int id;
-  final String nome;
-  final String email;
-  final String role;
-  final int? clienteId;
-
-  Usuario({
-    required this.id,
-    required this.nome,
-    required this.email,
-    required this.role,
-    this.clienteId,
-  });
-
-  bool get isAdmin => role == 'admin';
-
-  factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
-        id:         j['id'],
-        nome:       j['nome'],
-        email:      j['email'],
-        role:       j['role'],
-        clienteId:  j['cliente_id'],
-      );
 }

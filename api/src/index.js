@@ -6,26 +6,81 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ── Helpers ───────────────────────────────────────────────────
+function filtroData(periodo) {
+  switch (periodo) {
+    case 'hoje':   return 'DATE(criado_em) = CURDATE()';
+    case 'semana': return 'criado_em >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+    case 'mes':    return 'criado_em >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
+    default:       return '1=1';
+  }
+}
+
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (_, res) => res.json({ ok: true }));
 
-// ── Métricas (home) ───────────────────────────────────────────
-app.get('/metricas', async (_, res) => {
+// ── Métricas com filtro de período ────────────────────────────
+app.get('/metricas', async (req, res) => {
   try {
+    const periodo = req.query.periodo || 'todos';
+    const filtro  = filtroData(periodo);
+
     const [[{ total_pedidos }]] = await db.query(
-      'SELECT COUNT(*) AS total_pedidos FROM pedidos'
+      `SELECT COUNT(*) AS total_pedidos FROM pedidos WHERE ${filtro}`
     );
     const [[{ faturado }]] = await db.query(
-      'SELECT COALESCE(SUM(valor_total), 0) AS faturado FROM pedidos'
+      `SELECT COALESCE(SUM(valor_total), 0) AS faturado FROM pedidos WHERE ${filtro}`
     );
     const [[{ lucro }]] = await db.query(`
       SELECT COALESCE(SUM(pi.quantidade * (pi.preco_unitario - p.preco_custo / p.quantidade)), 0) AS lucro
       FROM pedido_itens pi
       JOIN produtos p ON p.id = pi.produto_id
+      JOIN pedidos ped ON ped.id = pi.pedido_id
+      WHERE ${filtro.replace('criado_em', 'ped.criado_em').replace('DATE(criado_em)', 'DATE(ped.criado_em)')}
     `);
     const margem = faturado > 0 ? ((lucro / faturado) * 100).toFixed(1) : 0;
 
     res.json({ total_pedidos, faturado, lucro, margem });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Dados do gráfico de barras (últimos 7 dias) ───────────────
+app.get('/relatorios/grafico', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        DATE(p.criado_em) AS dia,
+        COALESCE(SUM(p.valor_total), 0) AS faturamento,
+        COALESCE(SUM(pi.quantidade * (pr.preco_custo / pr.quantidade)), 0) AS custo
+      FROM pedidos p
+      JOIN pedido_itens pi ON pi.pedido_id = p.id
+      JOIN produtos pr ON pr.id = pi.produto_id
+      WHERE p.criado_em >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+      GROUP BY DATE(p.criado_em)
+      ORDER BY dia ASC
+    `);
+
+    // Preenche os 7 dias mesmo se não houver pedidos
+    const resultado = [];
+    for (let i = 6; i >= 0; i--) {
+      const data = new Date();
+      data.setDate(data.getDate() - i);
+      const diaStr = data.toISOString().split('T')[0];
+      const encontrado = rows.find(r => {
+        const d = new Date(r.dia);
+        return d.toISOString().split('T')[0] === diaStr;
+      });
+      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      resultado.push({
+        dia: diasSemana[data.getDay()],
+        faturamento: encontrado ? parseFloat(encontrado.faturamento) : 0,
+        custo: encontrado ? parseFloat(encontrado.custo) : 0,
+      });
+    }
+
+    res.json(resultado);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -53,7 +108,6 @@ app.get('/pedidos', async (_, res) => {
 
 app.post('/pedidos', async (req, res) => {
   const { cliente_id, itens } = req.body;
-  // itens: [{ produto_id, quantidade, preco_unitario }]
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
@@ -91,12 +145,10 @@ app.patch('/pedidos/:id/status', async (req, res) => {
   }
 });
 
-// ── Produtos / Relatórios ─────────────────────────────────────
+// ── Produtos ──────────────────────────────────────────────────
 app.get('/produtos', async (_, res) => {
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM produtos ORDER BY criado_em DESC'
-    );
+    const [rows] = await db.query('SELECT * FROM produtos ORDER BY criado_em DESC');
     res.json(rows);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -228,18 +280,13 @@ app.post('/cadastro', async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-
-    // Cria o cliente vinculado ao usuário
     const [{ insertId: clienteId }] = await conn.query(
       'INSERT INTO clientes (nome) VALUES (?)', [nome]
     );
-
-    // Cria o usuário já vinculado ao cliente
     const [{ insertId: usuarioId }] = await conn.query(
       'INSERT INTO usuarios (nome, email, senha, role, cliente_id) VALUES (?, ?, ?, "cliente", ?)',
       [nome, email, senha, clienteId]
     );
-
     await conn.commit();
     res.status(201).json({ id: usuarioId, nome, email, role: 'cliente', cliente_id: clienteId });
   } catch (e) {
@@ -252,5 +299,5 @@ app.post('/cadastro', async (req, res) => {
     conn.release();
   }
 });
-// ─────────────────────────────────────────────────────────────
+
 app.listen(3000, () => console.log('API rodando na porta 3000'));
