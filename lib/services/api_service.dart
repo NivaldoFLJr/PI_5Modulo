@@ -1,7 +1,5 @@
 import 'api_client.dart';
 
-// ── Modelos ───────────────────────────────────────────────────
-
 class Metricas {
   final int totalPedidos;
   final double faturado;
@@ -161,8 +159,6 @@ class Usuario {
         clienteId: j['cliente_id'],
       );
 }
-
-// ── Serviços ──────────────────────────────────────────────────
 
 class ApiService {
   static Future<Metricas> getMetricas({String periodo = 'todos'}) async {

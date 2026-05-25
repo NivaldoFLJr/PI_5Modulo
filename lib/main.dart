@@ -34,8 +34,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ── Shell do admin ────────────────────────────────────────────
-
 class AdminShell extends StatefulWidget {
   final Usuario usuario;
   const AdminShell({super.key, required this.usuario});
@@ -65,8 +63,6 @@ class _AdminShellState extends State<AdminShell> {
     );
   }
 }
-
-// ── Home do admin ─────────────────────────────────────────────
 
 class HomePage extends StatefulWidget {
   final Usuario usuario;
@@ -113,7 +109,6 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void _navigateTo(int index) {
-    // Sobe para o AdminShell e troca a aba
     final shell = context.findAncestorStateOfType<_AdminShellState>();
     shell?.setState(() => shell._index = index);
   }
@@ -171,7 +166,6 @@ class _HomePageState extends State<HomePage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              // ── Revenue Card ──────────────────────────────────
               Container(
                 height: 92,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -198,7 +192,6 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 18),
 
-              // ── Shortcut Carousel ─────────────────────────────
               Column(
                 children: [
                   SizedBox(
@@ -250,7 +243,6 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 18),
 
-              // ── Graph Highlight ───────────────────────────────
               GestureDetector(
                 onTap: () => _navigateTo(3),
                 child: Container(
@@ -330,8 +322,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-// ── Helpers internos ──────────────────────────────────────────
 
 class _ShortcutAction {
   final String title;

@@ -78,8 +78,6 @@ class _RelatoriosPageState extends State<RelatoriosPage> {
   }
 }
 
-// ── Conteúdo principal ────────────────────────────────────────
-
 class _Conteudo extends StatelessWidget {
   final Metricas? metricas;
   final List<ProdutoApi> produtos;
@@ -105,7 +103,6 @@ class _Conteudo extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        // ── Hero banner ───────────────────────────────────────
         SliverToBoxAdapter(
           child: _HeroBanner(metricas: metricas),
         ),
@@ -115,11 +112,9 @@ class _Conteudo extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
 
-              // ── Chips de período ──────────────────────────
               _PeriodChips(periodo: periodo, onChanged: onPeriodoChanged),
               const SizedBox(height: 16),
 
-              // ── Cards de métricas ─────────────────────────
               const Text('Resumo financeiro', style: TextStyle(
                 fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMuted,
               )),
@@ -127,15 +122,12 @@ class _Conteudo extends StatelessWidget {
               _GridMetricas(metricas: metricas),
               const SizedBox(height: 14),
 
-              // ── Gráfico de barras ─────────────────────────
               _CardGraficoBarras(grafico: grafico),
               const SizedBox(height: 14),
 
-              // ── Margem por produto ────────────────────────
               _CardMargemProdutos(produtos: produtos),
               const SizedBox(height: 14),
 
-              // ── Donut + Indicadores ───────────────────────
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -150,7 +142,6 @@ class _Conteudo extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // ── Top produtos ──────────────────────────────
               _CardTopProdutos(produtos: produtos),
             ]),
           ),
@@ -159,8 +150,6 @@ class _Conteudo extends StatelessWidget {
     );
   }
 }
-
-// ── Hero Banner ───────────────────────────────────────────────
 
 class _HeroBanner extends StatelessWidget {
   final Metricas? metricas;
@@ -209,8 +198,6 @@ class _HeroBanner extends StatelessWidget {
   }
 }
 
-// ── Period Chips ──────────────────────────────────────────────
-
 class _PeriodChips extends StatelessWidget {
   final String periodo;
   final ValueChanged<String> onChanged;
@@ -258,8 +245,6 @@ class _PeriodChips extends StatelessWidget {
     );
   }
 }
-
-// ── Grid de métricas ──────────────────────────────────────────
 
 class _GridMetricas extends StatelessWidget {
   final Metricas? metricas;
@@ -356,8 +341,6 @@ class _MetricCard extends StatelessWidget {
     );
   }
 }
-
-// ── Gráfico de barras ─────────────────────────────────────────
 
 class _CardGraficoBarras extends StatelessWidget {
   final List<GraficoDia> grafico;
@@ -464,8 +447,6 @@ class _Legenda extends StatelessWidget {
   }
 }
 
-// ── Margem por produto ────────────────────────────────────────
-
 class _CardMargemProdutos extends StatelessWidget {
   final List<ProdutoApi> produtos;
   const _CardMargemProdutos({required this.produtos});
@@ -528,8 +509,6 @@ class _CardMargemProdutos extends StatelessWidget {
     );
   }
 }
-
-// ── Donut Chart ───────────────────────────────────────────────
 
 class _CardDonut extends StatelessWidget {
   final List<ProdutoApi> produtos;
@@ -620,8 +599,6 @@ class _DonutPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// ── Indicadores ───────────────────────────────────────────────
-
 class _CardIndicadores extends StatelessWidget {
   final double ticketMedio;
   final double custoTotal;
@@ -670,8 +647,6 @@ class _CardIndicadores extends StatelessWidget {
     );
   }
 }
-
-// ── Top Produtos ──────────────────────────────────────────────
 
 class _CardTopProdutos extends StatelessWidget {
   final List<ProdutoApi> produtos;
@@ -774,8 +749,6 @@ class _CardTopProdutos extends StatelessWidget {
     );
   }
 }
-
-// ── Widget de erro ────────────────────────────────────────────
 
 class _ErroWidget extends StatelessWidget {
   final String mensagem;
