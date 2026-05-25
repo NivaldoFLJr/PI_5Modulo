@@ -5,3 +5,47 @@ services:
     build: .
     ports:
       - "8080:80"
+    networks:
+      - bete_net
+    depends_on:
+      - api
+
+  mysql:
+    image: mysql:8.0
+    container_name: bete_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: bete_salgados
+      MYSQL_USER: bete
+      MYSQL_PASSWORD: bete123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./api/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - bete_net
+
+  api:
+    build: ./api
+    container_name: bete_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: bete_salgados
+      DB_USER: bete
+      DB_PASSWORD: bete123
+    depends_on:
+      - mysql
+    networks:
+      - bete_net
+
+volumes:
+  mysql_data:
+
+networks:
+  bete_net:
